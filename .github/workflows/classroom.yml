@@ -1,0 +1,28 @@
+name: Autograding Tests
+on: [push]
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Linter
+      id: pylint-test
+      uses: rlalik/autograding-pylint-grader@v1
+      with:
+        timeout: 5
+        max-score: 1
+        setup-command: pip install pylint
+        pylint-args: '--enable=all'
+        files: 'FINDALL'
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        PYLINT-TEST_RESULTS: "${{steps.pylint-test.outputs.result}}"
+      with:
+        runners: pylint-test
